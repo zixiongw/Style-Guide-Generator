@@ -1,0 +1,220 @@
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/thomas-lowry/figma-plugin-ds/dist/figma-plugin-ds.css">
+<link rel="stylesheet" href="https://www.figma.com/plugin-docs/styles.css" />
+
+<style>
+  body {
+    background-color: #1b1c21;
+    color: #ffffff;
+  }
+
+  input {
+    display: block;
+    background-color: #2f3036;
+    color: #ffffff;
+    border: 1px solid #535353;
+    border-radius: 3px;
+    padding: 8px 12px;
+    width: 50%;
+    text-align: center; 
+  }
+
+  input::placeholder {
+    color: #8a8a8a;
+  }
+
+  button {
+    background-color: #33363c;
+    color: #ffffff;
+    border: 1px solid #535353;
+    border-radius: 3px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+
+  button:hover {
+    background-color: #43464c;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 10px;
+  }
+
+</style>
+
+<div class="container">
+  <h1>StyleGen</h1>
+  <p>Enter your goal for the styleguide below:</p>
+  <input id="input-box" type="text" placeholder="Example: Minimal, Modern, E-commerce Website " />
+  <button id="submit-button">Generate</button>
+</div>
+
+
+<script>
+
+
+// console.log("style start");
+
+// console.log(colorPrompt);
+// console.log(buttonPrompt);
+// console.log(typePrompt);
+
+
+async function fetchRecommendations(userRequirement, prompt) {
+    const apiKey = 'put your key here';
+    const requestOptions = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'text-davinci-003',
+        prompt: prompt,
+        max_tokens: 400,
+        n: 1,
+        temperature: 0.8,
+      }),
+    };
+
+    const response = await fetch('https://api.openai.com/v1/completions', requestOptions);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch recommendations: ${response.statusText}`);
+    }
+
+    return await response.json();
+  }
+
+
+  //call OpenAi API after user clicking submit
+  document.getElementById('submit-button').addEventListener('click', async () => {
+    const userRequirement = document.getElementById('input-box').value;
+
+    console.log("after clicking button");
+
+    const typePrompt = `Generate a series of character styles to be used in a ui styleguide, with the description: ${userRequirement}. The output should be in the following json format: 
+{
+  "header1": {
+    "fontFamily": string,
+    "fontSize": integer,
+    "fontWeight": string,
+    "fontColor": hex value
+  },
+  "header2": {
+    "fontFamily": string,
+    "fontSize": integer,
+    "fontWeight": string,
+    "fontColor": hex value
+  },
+  "body": {
+    "fontFamily": string,
+    "fontSize": integer,
+    "fontWeight": string,
+    "fontColor": hex value
+  }
+}
+Only return the json object code in your response. Omit all other text and explanations. Be sure to capitalize the first letter of "fontFamily" and "fontWeight". 
+Limit to the following font families: 'Arial', 'Roboto', 'Open Sans', 'Inter', 'Montserrat'`;
+
+const colorPrompt =  `Generate a series of colors to be used in a ui styleguide, with the description: ${userRequirement}. The output should be in the following json format:
+{
+  "primary": "hexvalue",
+  "secondary": "hexvalue",
+  "warning": "hexvalue"
+}
+Only return the json object code in your response. Omit all other text and explanations.`;
+
+const buttonPrompt =  `Generate a series of button metadata to be used in a ui styleguide, with the description: ${userRequirement}. The output should be in the following json format:
+{
+  "button1": {
+    "fontFamily": string,
+    "fontSize": integer,
+    "fontWeight": string,
+    "borderWidth": integer,
+    "borderColor": hex value,
+    "cornerRadius": integer,
+    "padding": integer,
+    "color": hex value,
+    "fontColor": hex value
+  },
+  "button2": {
+    "fontFamily": string,
+    "fontSize": integer,
+    "fontWeight": string,
+    "borderWidth": integer,
+    "borderColor": hex value,
+    "cornerRadius": integer,
+    "padding": integer,
+    "color": hex value,
+    "fontColor": hex value
+  },
+  "cancel": {
+    "fontFamily": string,
+    "fontSize": integer,
+    "fontWeight": string,
+    "borderWidth": integer,
+    "borderColor": hex value,
+    "cornerRadius": integer,
+    "padding": integer,
+    "color": hex value,
+    "fontColor": hex value
+  }
+}
+Only return the json object code in your response. Omit all other text and explanations. Be sure to capitalize the first letter of "fontFamily" and "fontWeight".
+Limit to the following font families: 'Arial', 'Roboto', 'Open Sans', 'Inter', 'Montserrat'`;
+
+
+
+    console.log(colorPrompt);
+    console.log(buttonPrompt);
+    console.log(typePrompt);
+
+
+
+
+    try {
+      const colorResponse = await fetchRecommendations(userRequirement, colorPrompt);
+      const colorResult = colorResponse.choices[0].text;
+
+      console.log("colorResult:")
+      console.log(colorResult)
+
+      const typeResponse = await fetchRecommendations(userRequirement, typePrompt);
+      const typeResult = typeResponse.choices[0].text;
+
+      console.log("typeResult:");
+      console.log(typeResult);
+
+      const buttonResponse = await fetchRecommendations(userRequirement, buttonPrompt);
+      const buttonResult = buttonResponse.choices[0].text;
+
+      console.log("buttonResult:");
+      console.log(buttonResult);
+
+
+
+      // const colors = parseColors(recommendationText);
+      // const typography = parseTypography(recommendationText);
+      
+      // Send the result to the plugin
+      parent.postMessage({ pluginMessage: { type: 'submit', colorResult, typeResult, buttonResult } }, '*');
+    } catch (error) {
+      console.error('Failed to fetch recommendations:', error);
+    }
+  });
+  
+
+
+
+
+
+
+</script>

@@ -1,0 +1,12 @@
+{
+  "name": "Style Guide Generator",
+  "id": "1230661480904465774",
+  "api": "1.0.0",
+  "main": "code.js",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": [
+    "figma"
+  ],
+  "ui": "ui.html"
+}
